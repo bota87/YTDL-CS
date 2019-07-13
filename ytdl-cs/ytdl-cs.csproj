@@ -1,8 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>ytdl_cs</RootNamespace>
+    <Description>ytdl-core porting</Description>
+    <RepositoryUrl>https://github.com/bota87/ytdl-cs</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
