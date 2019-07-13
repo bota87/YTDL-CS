@@ -16,7 +16,7 @@ namespace ytdl_cs
         private Regex rs = new Regex("(?:html5)?player[-_]([a-zA-Z0-9\\-_]+)(?:\\.js|\\/)");
         private Dictionary<string, string[]> cache = new Dictionary<string, string[]>();
 
-        internal async Task<string[]> GetTokensAsync(NameValueCollection info)
+        internal async Task<string[]> GetTokensAsync(NameValueCollection info, TimeSpan timeout)
         {
             string html5player = info["html5player"];
             string key = null;
@@ -37,7 +37,10 @@ namespace ytdl_cs
 
             string body;
             using (var httpClient = new HttpClient())
+            {
+                httpClient.Timeout = timeout;
                 body = await httpClient.GetStringAsync(absoluteUrl);
+            }
 
             string[] tokens = ExtractActions(body);
 

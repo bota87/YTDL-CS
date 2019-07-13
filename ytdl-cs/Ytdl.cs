@@ -18,11 +18,11 @@ namespace ytdl_cs
 
         private SignatureCipherManager signatureCipherManager = new SignatureCipherManager();
 
-        public async Task<VideoInfo> GetVideoInfoAsync(string videoId)
+        public async Task<VideoInfo> GetVideoInfoAsync(string videoId, TimeSpan timeout)
         {
             // Maybe consider extracting video_id from this parameter so links can be passed?
 
-            NameValueCollection info = await GetVideoInfoRawAsync(videoId);
+            NameValueCollection info = await GetVideoInfoRawAsync(videoId, timeout);
 
             if (info == null)
             {
@@ -36,16 +36,16 @@ namespace ytdl_cs
             int length = int.Parse(info["length_seconds"]);
 
             Format[] fmts = ParseFormats(info);
-            string[] tokens = await signatureCipherManager.GetTokensAsync(info);
+            string[] tokens = await signatureCipherManager.GetTokensAsync(info, timeout);
 
             List<Format> decipheredFormats = DecipherFormats(fmts, tokens);
 
             return new VideoInfo(title, video_id, author, length, decipheredFormats);
         }
 
-        public async Task<NameValueCollection> GetVideoInfoRawAsync(string videoId)
+        public async Task<NameValueCollection> GetVideoInfoRawAsync(string videoId, TimeSpan timeout)
         {
-            JObject config = await GetPageConfigAsync(videoId);
+            JObject config = await GetPageConfigAsync(videoId, timeout);
 
             if (config == null)
             {
@@ -68,6 +68,7 @@ namespace ytdl_cs
                 query["sts"] = sts;
                 builder.Query = query.ToString();
 
+                httpClient.Timeout = timeout;
                 videoInfo = await httpClient.GetStringAsync(builder.ToString());
             }
 
@@ -78,11 +79,14 @@ namespace ytdl_cs
             return info;
         }
 
-        public async Task<JObject> GetPageConfigAsync(string videoId)
+        public async Task<JObject> GetPageConfigAsync(string videoId, TimeSpan timeout)
         {
             string result;
             using (var httpClient = new HttpClient())
+            {
+                httpClient.Timeout = timeout;
                 result = await httpClient.GetStringAsync("https://youtube.com/watch?v=" + videoId);
+            }
             string configJson = DataFormatTools.ExtractBetween(result, "ytplayer.config = ", ";ytplayer.load");
 
             if (configJson == null)

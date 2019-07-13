@@ -10,7 +10,7 @@ namespace Example
         {
             var yt = new Ytdl();
             string videoId = "V7WSrlSIF8k";
-            VideoInfo info = await yt.GetVideoInfoAsync(videoId);
+            VideoInfo info = await yt.GetVideoInfoAsync(videoId, TimeSpan.FromSeconds(5));
             const short audiomp4tag = 140;
             string url = info.Formats.Find(x => x.Itag == audiomp4tag).Url;
             Console.WriteLine(url);
