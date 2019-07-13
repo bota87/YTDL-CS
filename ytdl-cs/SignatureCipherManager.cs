@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace ytdl_cs
 {
@@ -14,7 +16,7 @@ namespace ytdl_cs
         private Regex rs = new Regex("(?:html5)?player[-_]([a-zA-Z0-9\\-_]+)(?:\\.js|\\/)");
         private Dictionary<string, string[]> cache = new Dictionary<string, string[]>();
 
-        internal string[] GetTokens(NameValueCollection info)
+        internal async Task<string[]> GetTokensAsync(NameValueCollection info)
         {
             string html5player = info["html5player"];
             string key = null;
@@ -33,8 +35,9 @@ namespace ytdl_cs
 
             string absoluteUrl = BASE_URL + html5player;
 
-            WebClient httpClient = new WebClient();
-            string body = httpClient.DownloadString(absoluteUrl);
+            string body;
+            using (var httpClient = new HttpClient())
+                body = await httpClient.GetStringAsync(absoluteUrl);
 
             string[] tokens = ExtractActions(body);
 
@@ -90,7 +93,8 @@ namespace ytdl_cs
                 {
                     tokens.Add("r");
                 }
-                else if (key == sliceKey) {
+                else if (key == sliceKey)
+                {
                     tokens.Add("s" + m.Groups[4].Value);
                 }
                 else if (key == spliceKey)
@@ -115,7 +119,8 @@ namespace ytdl_cs
                 {
                     Array.Reverse(sig);
                 }
-                else if (token[0] == 'w') {
+                else if (token[0] == 'w')
+                {
                     int position = ~~int.Parse(token.Substring(1));
                     swapHeadAndPosition(ref sig, position);
                 }

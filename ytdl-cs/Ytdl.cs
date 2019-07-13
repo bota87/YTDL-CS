@@ -1,10 +1,8 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web;
@@ -20,11 +18,11 @@ namespace ytdl_cs
 
         private SignatureCipherManager signatureCipherManager = new SignatureCipherManager();
 
-        public VideoInfo GetVideoInfo(string videoId)
+        public async Task<VideoInfo> GetVideoInfo(string videoId)
         {
             // Maybe consider extracting video_id from this parameter so links can be passed?
 
-            NameValueCollection info = GetVideoInfoRaw(videoId);
+            NameValueCollection info = await GetVideoInfoRawAsync(videoId);
 
             if (info == null)
             {
@@ -38,16 +36,16 @@ namespace ytdl_cs
             int length = int.Parse(info["length_seconds"]);
 
             Format[] fmts = ParseFormats(info);
-            string[] tokens = signatureCipherManager.GetTokens(info);
+            string[] tokens = await signatureCipherManager.GetTokensAsync(info);
 
             List<Format> decipheredFormats = DecipherFormats(fmts, tokens);
 
             return new VideoInfo(title, video_id, author, length, decipheredFormats);
         }
 
-        public NameValueCollection GetVideoInfoRaw(string videoId)
+        public async Task<NameValueCollection> GetVideoInfoRawAsync(string videoId)
         {
-            JObject config = GetPageConfig(videoId);
+            JObject config = await GetPageConfigAsync(videoId);
 
             if (config == null)
             {
@@ -56,15 +54,23 @@ namespace ytdl_cs
 
             var sts = (string)config.GetValue("sts");
 
-            WebClient httpClient2 = new WebClient();
-            httpClient2.QueryString.Add("video_id", videoId);
-            httpClient2.QueryString.Add("eurl", VIDEO_EURL + videoId);
-            httpClient2.QueryString.Add("ps", "default");
-            httpClient2.QueryString.Add("gl", "US");
-            httpClient2.QueryString.Add("hl", "en");
-            httpClient2.QueryString.Add("sts", sts);
+            string videoInfo;
+            using (var httpClient = new HttpClient())
+            {
+                var builder = new UriBuilder("https://" + INFO_HOST + INFO_PATH);
+                builder.Port = -1;
+                var query = HttpUtility.ParseQueryString(builder.Query);
+                query["video_id"] = videoId;
+                query["eurl"] = VIDEO_EURL + videoId;
+                query["ps"] = "default";
+                query["gl"] = "US";
+                query["hl"] = "en";
+                query["sts"] = sts;
+                builder.Query = query.ToString();
 
-            string videoInfo = httpClient2.DownloadString("https://" + INFO_HOST + "/" + INFO_PATH);
+                videoInfo = await httpClient.GetStringAsync(builder.ToString());
+            }
+
             NameValueCollection info = HttpUtility.ParseQueryString(videoInfo);
 
             string html5player = (string)((JObject)config.GetValue("assets")).GetValue("js");
@@ -72,10 +78,11 @@ namespace ytdl_cs
             return info;
         }
 
-        public JObject GetPageConfig(string videoId)
+        public async Task<JObject> GetPageConfigAsync(string videoId)
         {
-            WebClient httpClient = new WebClient();
-            string result = httpClient.DownloadString("https://youtube.com/watch?v=" + videoId);
+            string result;
+            using (var httpClient = new HttpClient())
+                result = await httpClient.GetStringAsync("https://youtube.com/watch?v=" + videoId);
             string configJson = DataFormatTools.ExtractBetween(result, "ytplayer.config = ", ";ytplayer.load");
 
             if (configJson == null)
