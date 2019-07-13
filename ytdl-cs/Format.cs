@@ -1,4 +1,4 @@
-﻿namespace Ytdl2
+﻿namespace ytdl_cs
 {
     public class Format
     {

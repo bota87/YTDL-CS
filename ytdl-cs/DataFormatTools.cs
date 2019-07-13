@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Ytdl2
+namespace ytdl_cs
 {
     class DataFormatTools
     {

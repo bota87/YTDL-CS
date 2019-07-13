@@ -9,7 +9,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web;
 
-namespace Ytdl2
+namespace ytdl_cs
 {
     public class Ytdl
     {
@@ -40,7 +40,7 @@ namespace Ytdl2
             Format[] fmts = ParseFormats(info);
             string[] tokens = signatureCipherManager.GetTokens(info);
 
-            Format[] decipheredFormats = DecipherFormats(fmts, tokens);
+            List<Format> decipheredFormats = DecipherFormats(fmts, tokens);
 
             return new VideoInfo(title, video_id, author, length, decipheredFormats);
         }
@@ -117,7 +117,7 @@ namespace Ytdl2
             ).ToArray();
         }
 
-        private Format[] DecipherFormats(Format[] formats, string[] tokens)
+        private List<Format> DecipherFormats(Format[] formats, string[] tokens)
         {
             List<Format> deciphered = new List<Format>();
 
@@ -150,7 +150,7 @@ namespace Ytdl2
                 deciphered.Add(fmt);
             }
 
-            return deciphered.ToArray();
+            return deciphered;
 
         }
     }

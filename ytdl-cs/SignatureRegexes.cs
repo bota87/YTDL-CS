@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace Ytdl2
+namespace ytdl_cs
 {
     class SignatureRegexes
     {

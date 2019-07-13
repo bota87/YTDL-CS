@@ -5,7 +5,7 @@ using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace Ytdl2
+namespace ytdl_cs
 {
     internal class SignatureCipherManager
     {
