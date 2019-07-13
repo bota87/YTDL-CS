@@ -18,7 +18,7 @@ namespace ytdl_cs
 
         private SignatureCipherManager signatureCipherManager = new SignatureCipherManager();
 
-        public async Task<VideoInfo> GetVideoInfo(string videoId)
+        public async Task<VideoInfo> GetVideoInfoAsync(string videoId)
         {
             // Maybe consider extracting video_id from this parameter so links can be passed?
 
