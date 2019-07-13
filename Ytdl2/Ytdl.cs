@@ -89,7 +89,7 @@ namespace Ytdl2
         private Format[] ParseFormats(NameValueCollection videoInfo)
         {
             List<string> formats = new List<string>();
-            
+
             if (videoInfo["url_encoded_fmt_stream_map"] != null)
             {
                 formats.AddRange(videoInfo["url_encoded_fmt_stream_map"].Split(','));
@@ -111,7 +111,8 @@ namespace Ytdl2
                         properties["quality"],
                         type,
                         codecs,
-                        properties["s"]);
+                        properties["s"],
+                        properties["sp"]);
                 }
             ).ToArray();
         }
@@ -136,7 +137,10 @@ namespace Ytdl2
 
                 if (signature != null)
                 {
-                    urlParams.Set("signature", signature);
+                    if (fmt.sp != null)
+                        urlParams.Set(fmt.sp, signature);
+                    else
+                        urlParams.Set("signature", signature);
                     fmt.Sig = signature;
                 }
 
@@ -147,7 +151,7 @@ namespace Ytdl2
             }
 
             return deciphered.ToArray();
-            
+
         }
     }
 }

@@ -8,8 +8,9 @@
         public string Type { get; internal set; }
         public string Codecs { get; internal set; }
         public string Sig { get; internal set; }
+        public string sp { get; set; }
 
-        internal Format(string url, string itag, string quality, string type, string codecs, string sig)
+        internal Format(string url, string itag, string quality, string type, string codecs, string sig, string sp)
         {
             Url = url;
             Itag = short.Parse(itag);
@@ -17,6 +18,7 @@
             Type = type;
             Codecs = codecs;
             Sig = sig;
+            this.sp = sp;
         }
     }
 }
