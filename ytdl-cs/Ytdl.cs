@@ -84,16 +84,8 @@ namespace ytdl_cs
             string result;
             using (var httpClient = new HttpClient())
             {
-                var builder = new UriBuilder("https://youtube.com/watch?v=" + videoId);
-                builder.Port = -1;
-                var query = HttpUtility.ParseQueryString(builder.Query);
-                query["hl"] = "en";
-                query["bpctr"] = (DateTime.Now.Ticks / 1000).ToString();
-                builder.Query = query.ToString();
-
                 httpClient.Timeout = timeout;
-                httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/4.0"); // senza su xamarin forms con android non mi ritornava ytplayer.config 
-                result = await httpClient.GetStringAsync(builder.ToString());
+                result = await httpClient.GetStringAsync("https://youtube.com/watch?v=" + videoId);
             }
             string configJson = DataFormatTools.ExtractBetween(result, "ytplayer.config = ", ";ytplayer.load");
 

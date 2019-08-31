@@ -5,7 +5,7 @@
     <RootNamespace>ytdl_cs</RootNamespace>
     <Description>ytdl-core porting</Description>
     <RepositoryUrl>https://github.com/bota87/ytdl-cs</RepositoryUrl>
-    <Version>1.0.3</Version>
+    <Version>1.0.2</Version>
   </PropertyGroup>
 
   <ItemGroup>
