@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -30,17 +31,19 @@ namespace ytdl_cs
                 // TODO: Throw errors on specific operations.
             }
 
-            string title = info["title"];
-            string video_id = info["video_id"];
-            string author = info["author"];
-            int length = int.Parse(info["length_seconds"]);
+            JObject pr = JObject.Parse(info["player_response"]);
+            var vd = pr["videoDetails"];
+
+            string title = (string)vd["title"];
+            string author = (string)vd["author"];
+            int length = int.Parse((string)vd["lengthSeconds"]);
 
             Format[] fmts = ParseFormats(info);
             string[] tokens = await signatureCipherManager.GetTokensAsync(info, timeout);
 
             List<Format> decipheredFormats = DecipherFormats(fmts, tokens);
 
-            return new VideoInfo(title, video_id, author, length, decipheredFormats);
+            return new VideoInfo(title, videoId, author, length, decipheredFormats);
         }
 
         public async Task<NameValueCollection> GetVideoInfoRawAsync(string videoId, TimeSpan timeout)
