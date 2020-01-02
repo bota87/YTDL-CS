@@ -10,10 +10,10 @@
         public string Sig { get; internal set; }
         public string sp { get; set; }
 
-        internal Format(string url, string itag, string quality, string type, string codecs, string sig, string sp)
+        internal Format(string url, short itag, string quality, string type, string codecs, string sig, string sp)
         {
             Url = url;
-            Itag = short.Parse(itag);
+            Itag = itag;
             Quality = quality;
             Type = type;
             Codecs = codecs;

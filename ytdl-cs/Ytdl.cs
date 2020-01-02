@@ -34,11 +34,17 @@ namespace ytdl_cs
             JObject pr = JObject.Parse(info["player_response"]);
             var vd = pr["videoDetails"];
 
-            string title = (string)vd["title"];
-            string author = (string)vd["author"];
-            int length = int.Parse((string)vd["lengthSeconds"]);
+            string title = "";
+            string author = "";
+            int length = 0;
+            if (vd != null)
+            {
+                title = (string)vd["title"];
+                author = (string)vd["author"];
+                length = int.Parse((string)vd["lengthSeconds"]);
+            }
 
-            Format[] fmts = ParseFormats(info);
+            Format[] fmts = ParseFormats(pr);
             string[] tokens = await signatureCipherManager.GetTokensAsync(info, timeout);
 
             List<Format> decipheredFormats = DecipherFormats(fmts, tokens);
@@ -108,29 +114,28 @@ namespace ytdl_cs
             return JObject.Parse(configJson);
         }
 
-        private Format[] ParseFormats(NameValueCollection videoInfo)
+        private Format[] ParseFormats(JObject playerResponse)
         {
-            List<string> formats = new List<string>();
-
-            if (videoInfo["url_encoded_fmt_stream_map"] != null)
-            {
-                formats.AddRange(videoInfo["url_encoded_fmt_stream_map"].Split(','));
-            }
-
-            if (videoInfo["adaptive_fmts"] != null)
-            {
-                formats.AddRange(videoInfo["adaptive_fmts"].Split(','));
-            }
-
+            var formats = new List<JToken>();
+            var sd = playerResponse["streamingData"];
+            if (sd == null)
+                return new Format[] { };
+            if (sd["formats"] != null)
+                formats.AddRange(sd["formats"].Children());
+            if (sd["adaptiveFormats"] != null)
+                formats.AddRange(sd["adaptiveFormats"].Children());
             return formats.Select(x =>
                 {
-                    NameValueCollection properties = HttpUtility.ParseQueryString(x);
-                    string[] types = properties["type"].Split(';');
+                    string chiper = x.First(y => ((JProperty)y).Name == "cipher").Select(z => ((JValue)z).Value.ToString()).First();
+                    NameValueCollection properties = HttpUtility.ParseQueryString(chiper);
+                    short itag = x.First(y => ((JProperty)y).Name == "itag").Select(z => Convert.ToInt16(((JValue)z).Value)).First();
+                    string quality = x.First(y => ((JProperty)y).Name == "quality").Select(z => ((JValue)z).Value.ToString()).First();
+                    string[] types = x.First(y => ((JProperty)y).Name == "mimeType").Select(z => ((JValue)z).Value.ToString()).First().Split(';');
                     string type = types[0].Trim();
                     string codecs = HttpUtility.ParseQueryString(types[1].Trim())["codecs"].Replace("\"", "");
                     return new Format(properties["url"],
-                        properties["itag"],
-                        properties["quality"],
+                        itag,
+                        quality,
                         type,
                         codecs,
                         properties["s"],
